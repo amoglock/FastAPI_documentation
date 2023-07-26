@@ -39,7 +39,7 @@ pip install \"fastapi[all]\"
 >```
 >Установка `uvicorn` который работает в качестве сервера:
 > ```commandline
->pip install "uvicorn[standard]"
+>pip install \"uvicorn[standard]\"
 >```
 > Так можно установить любую отдельную зависимость, которую вам нужно использовать.
 
