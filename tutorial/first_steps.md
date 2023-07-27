@@ -54,12 +54,12 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 
 <h3>Интерактивная документация API</h3>
 Теперь перейдите по адресу http://127.0.0.1:8000/docs. <br>
-Вы увидите автоматическую документацию вашего API (предоставленную 
-[Swagger](https://github.com/swagger-api/swagger-ui/
-))
+Вы увидите автоматическую документацию вашего API (предоставленную [Swagger](https://github.com/swagger-api/swagger-ui/))
 <img src="https://fastapi.tiangolo.com/img/index/index-01-swagger-ui-simple.png">
 
 <h3>Альтернативная документация API</h3>
 А теперь, перейдем на http://127.0.0.1:8000/redoc. <br>
 Вы увидите альтернативную автоматическую документацию (предоставленную [ReDoc](https://github.com/Rebilly/ReDoc/))
 <img src="https://fastapi.tiangolo.com/img/index/index-02-redoc-simple.png">
+
+[ss](https://google.com)
