@@ -65,9 +65,9 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 <img src="https://fastapi.tiangolo.com/img/index/index-02-redoc-simple.png" width="393" height="442.125">
 
 <h3>OpenAPI</h3>
-FastPI создает "схему" со всеми вашими API, используя стандарт Open API для описания этих API.
+FastPI создает "схему" со всеми вашими API, используя стандарт Open API для описания этих API.<br>
 
-"Схема"
+"Схема".
 
 "Схема" это определение или описание чего-либо. Она не реализуется в коде - это абстрактный метод.
 
@@ -139,22 +139,26 @@ from fastapi import FastAPI
 > Вы можете использовать всю функциональность Starlette с вашим FastAPI.
 
 <h4>Шаг 2: создать экземпляр `FastAPI`</h4>
+
 ```python
 from fastapi import FastAPI
 
 app = FastAPI()
 ```
+
 Здесь переменная `app` будет экземпляром класса `FastAPI`.
 
 Это будет основной точкой взаимодействия для создания вашего API.
 
 Это тот `app`, на который ссылается `uvicorn` в команде:
+
 ```commandline
 uvicorn main:app --reload
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ```
 
 Если вы создаете свое приложение как:
+
 ```python
 from fastapi import FastAPI
 
@@ -162,12 +166,14 @@ my_awesome_api = FastAPI()
 ```
 
 И оно находится в файле `main.py`, тогда вы можете запустить `uvicorn` как:
+
 ```commandline
 uvicorn main:my_awesome_api --reload
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ```
 
 <h4>Шаг 3: создать операцию пути</h4>
+
 **Путь**
 
 "Путь" здесь относится к части URL которая начинается с первого `/`.
@@ -227,6 +233,7 @@ app = FastAPI()
 async def root():
     return {"message": "Hello World"}
 ```
+
 `@app.get("/")` сообщает FastAPI, что функция ниже отвечает за обработку запросов, которые идут на:
 * путь `/`
 * используя операцию `get`
@@ -270,6 +277,7 @@ async def root():
 * Путь это `/`.
 * Операция это `get`.
 * Функция это функция под декоратором (под `@app.get("/")`).
+
 ```python
 from fastapi import FastAPI
 
@@ -279,12 +287,14 @@ app = FastAPI()
 @app.get("/")
 async def root():
 ```
+
 Обычная функция Python.
 Она будет вызвана FastAPI каждый раз, когда получает запрос к URL `"/"`, используя операцию `GET`.
 
 В этом примере, это `async` (асинхронная) функция.
 ***
 Вы можете определить функцию как обычную, вместо `async def`:
+
 ```python
 from fastapi import FastAPI
 
@@ -297,6 +307,7 @@ def root():
 ```
 
 <h4>Шаг 5: вернуть содержимое</h4>
+
 ```python
 from fastapi import FastAPI
 
@@ -307,6 +318,7 @@ app = FastAPI()
 async def root():
     return {"message": "Hello World"}
 ```
+
 Вы можете возвращать `dict`, `list`, единичные значения (`str`, `int`), и т.д.
 
 Вы также можете вернуть модели Pydantic (об этом будет позже).
