@@ -83,7 +83,7 @@ http://127.0.0.1:8000/items/4.2
 Когда вы откроете браузер на http://127.0.0.1:8000/docs, вы увидите автоматическую, интерактивную
 документацию API, например такую:
 
-<img src="https://fastapi.tiangolo.com/img/tutorial/path-params/image01.png" width="393" height="442.125">
+<img src="https://fastapi.tiangolo.com/img/tutorial/path-params/image01.png" width="393" height="350">
 
 ```
 Просто объявив тип данных Python, FastAPI дает автоматичекую документацию (на основе Swagger UI).
