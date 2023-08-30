@@ -246,6 +246,65 @@ app = FastAPI()
 async def get_model(model_name: ModelName):
     if model_name is ModelName.alexnet:
         return {"model_name": model_name, "message": "Deep Learning FTW!"}
+```
+
+**Получение значения элемента перечисления**
+
+Можно получить значение (`str` в нашем случае). используя `model_name.value`, или в общем случае 
+`your_enum_member.value`:
+
+```python
+from enum import Enum
+
+from fastapi import FastAPI
+
+
+class ModelName(str, Enum):
+    alexnet = "alexnet"
+    resnet = "resnet"
+    lenet = "lenet"
+
+
+app = FastAPI()
+
+
+@app.get("/models/{model_name}")
+async def get_model(model_name: ModelName):
+    if model_name is ModelName.alexnet:
+        return {"model_name": model_name, "message": "Deep Learning FTW!"}
+
+    if model_name.value == "lenet":
+        return {"model_name": model_name, "message": "LeCNN all the images"}
+```
+
+>*Подсказка*
+> Можно так же использовать значение "lenet" с `ModelName.lenet.value`.
+
+**Возврат элемента перечисления**
+
+Вы можете вернуть элемент перечисления из операции пути, вложенный в тело JSON(как `dict`).
+
+Элементы будут конвертированы в соответствующие значения (строки в нашем случае) перед их возвратом:
+
+```python
+from enum import Enum
+
+from fastapi import FastAPI
+
+
+class ModelName(str, Enum):
+    alexnet = "alexnet"
+    resnet = "resnet"
+    lenet = "lenet"
+
+
+app = FastAPI()
+
+
+@app.get("/models/{model_name}")
+async def get_model(model_name: ModelName):
+    if model_name is ModelName.alexnet:
+        return {"model_name": model_name, "message": "Deep Learning FTW!"}
 
     if model_name.value == "lenet":
         return {"model_name": model_name, "message": "LeCNN all the images"}
@@ -253,6 +312,15 @@ async def get_model(model_name: ModelName):
     return {"model_name": model_name, "message": "Have some residuals"}
 ```
 
+В клиенте вы получите ответ JSON вроде:
 
+```JSON
+{
+  "model_name": "alexnet",
+  "message": "Deep Learning FTW!"
+}
+```
+
+**Параметры пути, содержащие пути**
 
 
