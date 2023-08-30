@@ -224,6 +224,7 @@ async def get_model(model_name: ModelName):
 Значение параметра пути будет элементом перечисления.
 
 *Сравнение элементов*
+
 Вы можете сравнить параметры с элементами созданными в `ModelName`:
 ```python
 from enum import Enum
