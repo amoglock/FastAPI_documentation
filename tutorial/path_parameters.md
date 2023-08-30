@@ -91,3 +91,166 @@ http://127.0.0.1:8000/items/4.2
 ```
 
 <h3>Стандартные преимущества, альтернативная документация</h3>
+Так как схема генерируется по стандарту OpenAPI, существует множество совместимых инструментов.
+
+Поэтому, FastAPI предоставляет альтернативную документацию API (используя ReDoc), которая доступна по 
+адресу http://127.0.0.1:8000/redoc:
+<img src="https://fastapi.tiangolo.com/img/tutorial/path-params/image02.png" width="393" height="350">
+
+Таким способом доступно множество совместимых инструментов. Включая инструменты генерации кода для 
+множества языков.
+
+<h4>Pydantic</h4>
+Вся валидация данных выполняется "под капотом" с помощью Pydantic, поэтому вы получаете все его
+преимущества. 
+
+Вы можете также использовать объявление типов с `str`, `float`, `bool` и другими сложными типами данных.
+
+Некоторые из них рассматриваются в дальнейших главах учебника.
+
+<h4>Очередность имеет значение</h4>
+При создании *операций с путями*, вы можете столкнуться с ситуациями, когда у вас фиксированный путь.
+
+Например `/users/me`, допустим он дает данные о текущем пользователе.
+
+Но так же у вас может быть путь `/users/{user_id}`, чтобы получить данные определенного пользователя по
+его ID.
+
+Так как *операции с путями* выполняются по порядку, вам нужно быть уверенным, что путь `/users/me` объявлен
+перед `/users/{user_id}`:
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/users/me")
+async def read_user_me():
+    return {"user_id": "the current user"}
+
+
+@app.get("/users/{user_id}")
+async def read_user(user_id: str):
+    return {"user_id": user_id}
+```
+
+Иначе, путь `/users/{user_id}` может работать и для `/users/me`, принимая в параметр `user_id` значение `me`.
+
+Аналогично, вы не можете переопределить операцию пути:
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/users")
+async def read_users():
+    return ["Rick", "Morty"]
+
+
+@app.get("/users")
+async def read_users2():
+    return ["Bean", "Elfo"]
+```
+
+Всегда будет использоваться первая т.к. это первое совпадение.
+
+<h4>Предопределенные значения</h4>
+Если у вас есть *операция пути* которая принимает *параметр пути*, но вам нужно чтобы возможные значения
+были определены заранее, вы можете использовать стандартный `Enum` Python.
+
+**Создайте класс Enum**
+
+Импортируем `Enum` и создаем подкласс, который наследуется от `str` и `Enum`.
+
+С помощью наследования от `str`, документация API понимает, что значения должны иметь тип `string` и сможет
+корректно их отображать.
+
+Затем создаем атрибуты класса с определенными значениями, которые будут доступны как допустимые значения:
+
+```python
+from enum import Enum
+
+from fastapi import FastAPI
+
+
+class ModelName(str, Enum):
+    alexnet = "alexnet"
+    resnet = "resnet"
+    lenet = "lenet"
+
+
+app = FastAPI()
+```
+
+
+>**Для информации**<br>
+>Enum доступен в Python начиная с версии 3.4
+
+>*Подсказка*<br>
+> Если вам интересно, "AlexNet", "ResNet" и "LeNet", это модели *машинного обучения*
+
+**Создайте параметр пути**
+
+Затем создайте параметр пути с аннотацией типов используя созданный класс enum (`ModelName`):
+
+```python
+from enum import Enum
+
+from fastapi import FastAPI
+
+
+class ModelName(str, Enum):
+    alexnet = "alexnet"
+    resnet = "resnet"
+    lenet = "lenet"
+
+
+app = FastAPI()
+
+
+@app.get("/models/{model_name}")
+async def get_model(model_name: ModelName):
+```
+
+**Проверьте документацию**
+
+Так как доступные значения параметра пути уже определены, документация может их показать:
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/path-params/image03.png" width="430" height="500">
+
+**Работа с Python enumerations**
+
+Значение параметра пути будет элементом перечисления.
+
+*Сравнение элементов*
+Вы можете сравнить параметры с элементами созданными в `ModelName`:
+```python
+from enum import Enum
+
+from fastapi import FastAPI
+
+
+class ModelName(str, Enum):
+    alexnet = "alexnet"
+    resnet = "resnet"
+    lenet = "lenet"
+
+
+app = FastAPI()
+
+
+@app.get("/models/{model_name}")
+async def get_model(model_name: ModelName):
+    if model_name is ModelName.alexnet:
+        return {"model_name": model_name, "message": "Deep Learning FTW!"}
+
+    if model_name.value == "lenet":
+        return {"model_name": model_name, "message": "LeCNN all the images"}
+
+    return {"model_name": model_name, "message": "Have some residuals"}
+```
+
+
+
+
