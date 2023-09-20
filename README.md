@@ -9,4 +9,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/path_parameters.md">Параметры пути</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/query_parameters.md">Параметры запроса</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/request_body.md">Тело запроса</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/query_parameters_and_string_validations.md">Параметры запроса и валидация строк</a><br>
 </p>
