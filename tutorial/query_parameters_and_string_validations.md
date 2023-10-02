@@ -383,3 +383,137 @@ async def read_items(q: Annotated[str, Query(min_length=3)]):
     return results
 ```
 
+<h3>Обязательный параметр с Ellipsis `(...)`</h3>
+
+Существует альтернативный способ чтобы явно объявлять, что значение обязательно. Вы можете установить значение по
+умолчанию с помощью значения `...`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(q: Annotated[str, Query(min_length=3)] = ...):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+> **Для информации**
+> 
+> Если вы не видели `...` ранее: это специальное значение, это элемент Python, называемый Ellipsis.
+> 
+> Он использовался Pydantic и FastAPI чтобы явно объявлять, что значение обязательно.
+
+
+Это будет указывать FastAPI что этот параметр обязателен.
+
+<h3>Обязательный параметр с `None`</h3>
+
+Вы можете объявить, что параметр может принимать значение None, но все еще оставаться обязательным. Это могло бы
+заставлять клиентов отправлять значение, даже если значение `None`.
+
+Чтобы это сделать, вы можете объявить, что `None` это валидный тип данных, но использовать `...` как значение по умолчанию:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(q: Annotated[str | None, Query(min_length=3)] = ...):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+> **Совет**
+> 
+> Pydantic, обеспечивающий всю проверку данных и сериализацию в FastAPI, имеет особое поведение когда вы используете  
+> `Optional` или `Union[Something, None]` без значения по умолчанию. Вы можете прочитать об этом больше в документации
+> Pydantic в разделе <a href="https://pydantic-docs.helpmanual.io/usage/models/#required-optional-fields">Required Optional fields</a>
+
+
+<h3>Использование Pydantic `Required` вместо Ellipsis `(...)`</h3>
+
+Если вам некомфортно использовать `...`, вы можете импортировать и использовать `Required` из Pydantic:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+from pydantic import Required
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(q: Annotated[str, Query(min_length=3)] = Required):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+> **Совет**
+> 
+> Помните, что в большинстве случаев, когда что-то обязательно, вы можете просто игнорировать значение по умолчанию,
+> поэтому вам обычно не нужно использовать ни `...`, ни `Required`.
+
+<h3>Список/несколько значений параметра запроса</h3>
+
+Когда вы явно объявляете параметр запроса с `Query`, вы можете также объявить ему принимать список значений, или в другом
+случае, принимать несколько значений.
+
+Например, объявить параметр запроса `q`, который может появляться несколько раз в URL, вы можете написать:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(q: Annotated[list[str] | None, Query()] = None):
+    query_items = {"q": q}
+    return query_items
+```
+
+Тогда, вот в таком URL:
+
+`http://localhost:8000/items/?q=foo&q=bar`
+
+вы можете принять несколько значений параметров запроса `q` (`foo` и `bar`) в Python `list` внутри вашей функции
+операции пути, в параметре функции `q`.
+
+Поэтому, ответ от этого URL, может быть таким:
+
+```JSON
+{
+  "q": [
+    "foo",
+    "bar"
+  ]
+}
+```
+
+> **Совет**
+> 
+> Чтобы объявить параметр запроса с типом `list`, как в примере выше, нужно явно использовать `Query`,
+> в противном случае это было бы истолковано как тело запроса.
+
+Документация API будет обновлена соответственно, чтобы предоставить несколько значений:
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/query-params-str-validations/image02.png" width="430" height="450">
+
