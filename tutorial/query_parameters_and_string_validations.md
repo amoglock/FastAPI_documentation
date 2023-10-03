@@ -517,3 +517,238 @@ async def read_items(q: Annotated[list[str] | None, Query()] = None):
 
 <img src="https://fastapi.tiangolo.com/img/tutorial/query-params-str-validations/image02.png" width="430" height="450">
 
+<h4>Список/несколько значений параметра запроса со значениями по умолчанию</h4>
+
+И вы также можете объявить список по умолчанию, если значения не предоставлены:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(q: Annotated[list[str], Query()] = ["foo", "bar"]):
+    query_items = {"q": q}
+    return query_items
+```
+
+Если вы перейдете по:
+
+`http://localhost:8000/items/`
+
+значения `q` по умолчанию будут: `["foo", "bar"]`, а ответ будет:
+
+```JSON
+{
+  "q": [
+    "foo",
+    "bar"
+  ]
+}
+```
+
+<h4>Использование `list`</h4>
+
+Вы можете еще использовать `list` напрямую, вместо `List[str]` (или `list[str]` в Python 3.9+)
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(q: Annotated[list, Query()] = []):
+    query_items = {"q": q}
+    return query_items
+```
+
+> **Заметка**
+> 
+> Имейте в виду, что в данном случае, FastAPI не проверяет содержимое списка.
+> 
+> Например, `List[int]` мог бы проверять (и документировать), что содержимое списка это числа. Но просто `list` не будет.
+
+<h3>Объявление еще больше метаданных</h3>
+
+Вы можете добавить больше информации о параметре.
+
+Эта информация будет включена в сгенерированное OpenAPI и использоваться документацией интерфейса и внешними инструментами.
+
+> **Заметка**
+> 
+> Имейте в виду, что различные инструменты имеют разные уровни поддержи OpenAPI.
+> 
+> Некоторые из них могут не показывать всю дополнительную информацию, хотя в большинстве случаев, пропущенная функция уже
+> запланирована для разработки.
+
+
+Вы можете добавить `title`
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(
+    q: Annotated[str | None, Query(title="Query string", min_length=3)] = None
+):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+И `description`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(
+    q: Annotated[
+        str | None,
+        Query(
+            title="Query string",
+            description="Query string for the items to search in the database that have a good match",
+            min_length=3,
+        ),
+    ] = None
+):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+<h3>Псевдоним параметров</h3>
+
+Представьте, что вы хотите, чтобы параметр был `item-query`.
+
+Вот такой:
+
+`http://127.0.0.1:8000/items/?item-query=foobaritems`
+
+Но `item-query` это невалидное имя переменной Python.
+
+Максимально близкое название могло быть `item_query`.
+
+Но вам все равно нужно чтобы оно было именно `item-query`...
+
+Тогда вы можете объявить `alias` и этот псевдоним будет использоваться для поиска значений параметра:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(q: Annotated[str | None, Query(alias="item-query")] = None):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+<h3>Устаревающие параметры</h3>
+
+Теперь давайте предположим, что вам больше не нравится параметр. 
+
+Вы должны оставить его на какое-то время, потому что его используют пользователи. Но вы хотите понятно показать в
+документации, что этот параметр устаревает (рекомендуется не использовать его).
+
+Тогда передайте параметр `deprecated=True` в `Query`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(
+    q: Annotated[
+        str | None,
+        Query(
+            alias="item-query",
+            title="Query string",
+            description="Query string for the items to search in the database that have a good match",
+            min_length=3,
+            max_length=50,
+            pattern="^fixedquery$",
+            deprecated=True,
+        ),
+    ] = None
+):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+Документация покажет что-то вроде такого:
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/query-params-str-validations/image01.png" width="430" height="370">
+
+<h3>Исключение из OpenAPI</h3>
+
+Чтобы исключить параметр запроса из сгенерированной схемы OpenAPI (и таким образом, из систем автоматической документации),
+установите параметр `include_in_schema` в `Query` на `False`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Query
+
+app = FastAPI()
+
+
+@app.get("/items/")
+async def read_items(
+    hidden_query: Annotated[str | None, Query(include_in_schema=False)] = None
+):
+    if hidden_query:
+        return {"hidden_query": hidden_query}
+    else:
+        return {"hidden_query": "Not found"}
+```
+
+<h3>Резюме</h3>
+
+Вы можете объявить дополнительные проверки и метаданные для ваших параметров.
+
+Общие проверки и метаданные:
+
+* `alias`
+* `title`
+* `description`
+* `deprecated`
+
+Определенные проверки для строк:
+
+* `min_length`
+* `max_length`
+* `pattern`
+
+В этих примерах вы увидели как объявлять проверки для значений `str`.
+
+Посмотрим следующие главы, чтобы увидеть как объявить проверки для других типов данных, например чисел.
