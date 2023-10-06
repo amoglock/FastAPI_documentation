@@ -177,3 +177,102 @@ async def read_items(
     return results
 ```
 
+<h3>Валидация чисел: больше чем или равно</h3>
+
+С `Query` и `Path` (и другим, что вы увидите позже) вы можете объявить ограничения для чисел.
+
+Здесь, с `ge=1`,`item_id` будет нужно чтобы число было больше или равно 1.
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Path
+
+app = FastAPI()
+
+
+@app.get("/items/{item_id}")
+async def read_items(
+    item_id: Annotated[int, Path(title="The ID of the item to get", ge=1)], q: str
+):
+    results = {"item_id": item_id}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+<h3>Валидация чисел: больше чем и меньше чем или равно</h3>
+
+То же самое относится к:
+
+* `gt`: больше чем
+* `le`: меньше чем или равно
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Path
+
+app = FastAPI()
+
+
+@app.get("/items/{item_id}")
+async def read_items(
+    item_id: Annotated[int, Path(title="The ID of the item to get", gt=0, le=1000)],
+    q: str,
+):
+    results = {"item_id": item_id}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+<h3>Валидация чисел: числа с плавающей точкой, больше чем и меньше чем</h3>
+
+Числовые проверки также работают для значений `float`.
+
+Вот тут и становится важным возможность объявить `gt`, а не только `ge`. Как и в случае с ним вам может потребоваться,
+например, что значение должно быть больше `0`, даже если оно меньше `1`.
+
+Поэтому, `0.5` может быть допустимым значением. А `0.0` или `0` нет.
+
+ТО же самое и для `lt`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Path, Query
+
+app = FastAPI()
+
+
+@app.get("/items/{item_id}")
+async def read_items(
+    *,
+    item_id: Annotated[int, Path(title="The ID of the item to get", ge=0, le=1000)],
+    q: str,
+    size: Annotated[float, Query(gt=0, lt=10.5)],
+):
+    results = {"item_id": item_id}
+    if q:
+        results.update({"q": q})
+    return results
+```
+
+<h3>Резюмируем</h3>
+
+С `Query`, `Path` (и другими параметра которые вы пока не видели) можно объявлять метаданные и проверки строк так же как
+и с параметрами запроса и проверками строк.
+
+Вы можете так же объявить числовые проверки:
+
+* `gt`: больше чем
+* `ge`: меньше чем или равно
+* `lt`: меньше чем
+* `le`: меньше чем или равно
+
+> **Для информации**
+> 
+> `Query`, `Path` и другое классы, которые вы увидите позже, это подклассы общего класса `Param`.
+> 
+> Все они используют одни и те же параметры для дополнительной проверки и метаданных, которые вы видели.
