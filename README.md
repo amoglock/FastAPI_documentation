@@ -13,4 +13,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/path_parameters_and_numeric_validations.md">Параметры пути и валидация чисел</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/body_multiple_parameters.md">Тело запроса - несколько параметров</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/body_fields.md">Тело запроса - Fields</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/body_nested_models.md">Тело запроса - вложенные модели</a><br>
 </p>
