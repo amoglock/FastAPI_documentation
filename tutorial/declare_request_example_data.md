@@ -79,4 +79,212 @@ class Item(BaseModel):
 ...
 ```
 
+<h3>`examples` в схеме JSON - OpenAPI</h3>
+
+При использовании любого из:
+
+* `Path()`
+* `Query()`
+* `Header()`
+* `Cookie()`
+* `Body()`
+* `Form()`
+* `File()`
+
+Вы также можете объявлять группу `examples` с добавочной информацией которая в их схему JSON внутри OpenAPI.
+
+<h4>`Body` с `examples`</h4>
+
+Здесь мы передаем `examples` содержащие один пример ожидаемых данных в `Body()`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, Body
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+@app.put("/items/{item_id}")
+async def update_item(
+        item_id: int,
+        item: Annotated[
+            Item,
+            Body(
+                examples=[
+                    {
+                        "name": "Foo",
+                        "description": "A very nice Item",
+                        "price": 35.4,
+                        "tax": 3.2,
+                    }
+                ],
+            ),
+        ],
+):
+    results = {"item_id": item_id, "item": Item}
+    return results
+```
+
+<h4>Пример в документации UI</h4>
+
+С любым из методов выше это может выглядеть вот так в `/docs`:
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/body-fields/image01.png" width="430" height="415">
+
+<h4>`Body()` с несколькими `examples`</h4>
+
+Конечно, вы можете передавать несколько `examples`:
+
+```python
+from typing import Annotated
+
+from fastapi import Body, FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+@app.put("/items/{item_id}")
+async def update_item(
+        *,
+        item_id: int,
+        item: Annotated[
+            Item,
+            Body(
+                examples=[
+                    {
+                        "name": "Foo",
+                        "description": "A very nice Item",
+                        "price": 35.4,
+                        "tax": 3.2,
+                    },
+                    {
+                        "name": "Bar",
+                        "price": "35.4",
+                    },
+                    {
+                        "name": "Baz",
+                        "price": "thirty five point four",
+                    },
+                ],
+            ),
+        ],
+):
+    results = {"item_id": item_id, "item": item}
+    return results
+```
+
+Когда вы делаете так, примеры будут частью внутренней схемы JSON для этого тела данных.
+
+Тем не менее на сегодня (26.08.2023), Swagger UI, инструмент отвечающий за показ документации UI, не поддерживает
+демонстрацию множественных примеров для данных в схеме JSON. Но читайте ниже для обходного пути.
+
+<h4>Конкретные OpenAPI `examples`</h4>
+
+С тех пор как схема JSON поддерживает `examples` OPenAPI имеет поддержку отдельного поля, так же называемого `examples`.
+
+Этот конкретный OpenAPI `examples` входит в другую секцию спецификации OpenAPI. Она входит в детали для каждой операции
+пути, а не внутрь каждой схемы JSON.
+
+И Swagger UI имеет временную поддержку этих конкретных полей `examples`. Поэтому, вы можете использовать их, чтобы показать
+различные примеры в документации UI.
+
+Форма такого конкретного поля OpenAPI `examples` это `dict` с несколькими примерами (вместо `list`), каждый с
+дополнительной информацией которая будет также добавлена в OpenAPI.
+
+Она не войдет в каждую схему JSON, содержащуюся в OpenAPI, она будет снаружи, непосредственно в операции пути.
+
+<h4>Использование параметра `openapi_examples`</h4>
+
+Вы можете объявлять конкретный OpenAPI параметр `examples` в FastAPI с помощью параметра `openapi_examples` для:
+
+* `Path()`
+* `Query()`
+* `Header()`
+* `Cookie()`
+* `Body()`
+* `Form()`
+* `File()`
+
+Ключи для этого `dict` определяются для каждого примера, а каждое значение это еще один `dict`.
+
+Каждый отдельный пример `dict` в `examples` может содержать:
+
+* `summary`: Короткое описание примера.
+* `description`: Подробное описание которое может содержать разметку Markdown.
+* `value`: Это демонстрация актуального примера, например `dict`.
+* `externalValue`: альтернативный `value`, URL указывающий на пример. Хотя это может поддерживаться меньшим количеством
+инструментов чем `value`.
+
+Вы можете использовать это например так:
+
+```python
+from typing import Annotated
+
+from fastapi import Body, FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+
+@app.put("/items/{item_id}")
+async def update_item(
+    *,
+    item_id: int,
+    item: Annotated[
+        Item,
+        Body(
+            openapi_examples={
+                "normal": {
+                    "summary": "A normal example",
+                    "description": "A **normal** item works correctly.",
+                    "value": {
+                        "name": "Foo",
+                        "description": "A very nice Item",
+                        "price": 35.4,
+                        "tax": 3.2,
+                    },
+                },
+                "converted": {
+                    "summary": "An example with converted data",
+                    "description": "FastAPI can convert price `strings` to actual `numbers` automatically",
+                    "value": {
+                        "name": "Bar",
+                        "price": "35.4",
+                    },
+                },
+                "invalid": {
+                    "summary": "Invalid data is rejected with an error",
+                    "value": {
+                        "name": "Baz",
+                        "price": "thirty five point four",
+                    },
+                },
+            },
+        ),
+    ],
+):
+    results = {"item_id": item_id, "item": item}
+    return results
+```
 
