@@ -19,4 +19,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/cookie_parameters.md">Параметры куки</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/header_parameters.md">Параметры заголовка</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/responce_model_return_type.md">Модель ответа - возвращаемый тип</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/extra_models.md">Дополнительные модели</a><br>
 </p>
