@@ -468,5 +468,184 @@ async def read_item(item_id: str):
     return items[item_id]
 ```
 
-И значения по умолчанию не будут включены в ответ, только 
-фактически установленные.
+И значения по умолчанию не будут включены в ответ, только фактически установленные.
+
+Поэтому, если вы отправляете запрос в эту операцию пути для элемента с ID `foo`, ответ (не включающий значения по умолчанию)
+будет таким:
+
+```JSON
+{
+    "name": "Foo",
+    "price": 50.2
+}
+```
+
+> **Для информации**
+> 
+> FastAPI использует `.dict()` модели Pydantic с его 
+> <a href="https://pydantic-docs.helpmanual.io/usage/exporting_models/#modeldict">параметром `exclude_unset`</a>
+> чтобы получить такой результат.
+
+> **Для информации**
+> 
+> Вы также можете использовать:
+> 
+>   * `response_model_exclude_defaults=True`
+>   * `response_model_exclude_none=True`
+> 
+> Как описано в <a href="https://pydantic-docs.helpmanual.io/usage/exporting_models/#modeldict">документации Pydantic</a> 
+> для`exclude_defaults` и `exclude_none`.
+
+<h4>Данные со значениями для полей по умолчанию</h4>
+
+Но если выши данные имеют значения для полей модели у которых есть умолчания, например как элемент с ID `bar`:
+
+```JSON
+{
+  "name": "Bar",
+  "description": "The bartenders",
+  "price": 62,
+  "tax": 20.2
+}
+```
+
+они будут включены в ответ.
+
+<h4>Данные с такими же значениями как и умолчания</h4>
+
+Если данные имеют те же значения, что и умолчания, как, например, элемент с ID `baz`:
+
+```Python
+{
+    "name": "Baz",
+    "description": None,
+    "price": 50.2,
+    "tax": 10.5,
+    "tags": []
+}
+```
+
+FastAPI достаточно умный (на самом деле это Pydantic) чтобы понять это, даже несмотря на то, что `description`, `tax` и 
+`tags` имеют те же значения, как и умолчания, они будут установлены явно (вместо того чтобы брать умолчания).
+
+Поэтому они будут включены в ответ JSON.
+
+> **Совет**
+> 
+> Обратите внимание, что значения по умолчанию могут любыми, а не только `None`.
+> 
+> Они могут быть списком (`[]`), `float` от `10.5`, и т.д.
+
+<h4>`response_model_include` и `response_model_exclude`</h4>
+
+Вы также можете использовать параметры декоратора операции пути `response_model_include` и `response_model_exclude`.
+
+Они принимают `set` из `str` с названием аттрибутов, чтобы включать (игнорируя остальное) или исключать (включая остальное).
+
+Это может быть полезно как быстрый короткий путь если у вас есть только одна модель Pydantic и вы хотите удалить какие-то
+данные из вывода.
+
+> **Совет**
+> 
+> Но все же рекомендовано использовать идеи выше, используя несколько классов, вместо этих параметров.
+> 
+> Это потому, что JSON схема, сгенерированная в OpenAPI(и документации) вашего приложения, все еще будет единственной для
+> полной модели, даже если вы используете `response_model_include` и `response_model_exclude` чтобы пропускать какие-то
+> аттрибуты.
+> 
+> Это так же применяется к `response_model_by_alias` которая работает похоже.
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float = 10.5
+
+
+items = {
+    "foo": {"name": "Foo", "price": 50.2},
+    "bar": {"name": "Bar", "description": "The Bar fighters", "price": 62, "tax": 20.2},
+    "baz": {
+        "name": "Baz",
+        "description": "There goes my baz",
+        "price": 50.2,
+        "tax": 10.5,
+    },
+}
+
+@app.get(
+    "/items/{item_id}/name",
+    response_model=Item,
+    response_model_include={"name", "description"},
+)
+async def read_item_name(item_id: str):
+    return items[item_id]
+
+@app.get("/items/{item_id}/public", response_model=Item, response_model_exclude={"tax"})
+async def read_item_public_data(item_id: str):
+    return items[item_id]
+```
+
+> **Подсказка**
+> 
+> Синтаксис {"name", "description"} создает `set` с этими двумя значениями.
+> 
+> Он эквивалентен `set(["name", "description"])`.
+
+<h4>Использование `list` вместо `set`</h4>
+
+Если вы забываете использовать `set` и вместо этого используете `list` или `tuple`, FastAPI все равно будет конвертировать
+их в `set` и работать правильно:
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float = 10.5
+
+
+items = {
+    "foo": {"name": "Foo", "price": 50.2},
+    "bar": {"name": "Bar", "description": "The Bar fighters", "price": 62, "tax": 20.2},
+    "baz": {
+        "name": "Baz",
+        "description": "There goes my baz",
+        "price": 50.2,
+        "tax": 10.5,
+    },
+}
+
+
+@app.get(
+    "/items/{item_id}/name",
+    response_model=Item,
+    response_model_include=["name", "description"],
+)
+async def read_item_name(item_id: str):
+    return items[item_id]
+
+
+@app.get("/items/{item_id}/public", response_model=Item, response_model_exclude=["tax"])
+async def read_item_public_data(item_id: str):
+    return items[item_id]
+```
+
+<h3>Резюме</h3>
+
+Используйте параметр декоратора операции пути `response_model` чтобы объявить модели ответа и особенно, чтобы обеспечить
+фильтрацию приватных данных.
+
+Используйте `response_model_exclude_unset` чтобы возвращать только явно установленные значения.
