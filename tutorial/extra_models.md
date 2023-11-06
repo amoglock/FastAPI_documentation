@@ -280,3 +280,51 @@ some_variable: PlaneItem | CarItem
 
 <h3>Список моделей</h3>
 
+Таким же способом вы можете объявлять ответы списками объектов.
+
+Для этого используйте стандартный `typing.List` Python (или просто `list` в Python 3.9 или выше):
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    description: str
+items = [
+    {"name": "Foo", "description": "There comes my hero"},
+    {"name": "Red", "description": "it`s my aeroplane"},
+]
+
+@app.get("/items/", response_model=list[Item])
+async def read_items():
+    return items
+```
+
+<h3>Ответ произвольным `dict`</h3>
+
+Вы также можете объявлять ответ, используя простой произвольный `dict`, просто объявив тип ключей и значений, без 
+использования модели Pydantic.
+
+Это полезно если не знаете допустимое поле/имена аттрибута (которые могли бы понадобиться для модели Pydantic) заранее.
+
+В таком случае, вы можете использовать `typing.Dict` (или просто `dict` в Python 3.9 или выше):
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("keyword-weights/", response_model=dict[str, float])
+async def read_keyword_weights():
+    return {"foo": 2.3, "bar": 3.4}
+```
+
+<h3>Резюме</h3>
+
+Используйте несколько моделей Pydantic и легко наследуйтесь от них для каждого случая.
+
+Вам не обязательно иметь одну модель данных для каждой сущности, если эта сущность должны иметь разные "состояния". Как 
+в случае с "сущностью" пользователя с состоянием включающим `password`, `password_hash` и без пароля.
