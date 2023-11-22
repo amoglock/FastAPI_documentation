@@ -74,3 +74,49 @@ async def create_item(name: str):
 > 
 > Узнать больше о каждом статус-коде и какой код для чего можно здесь 
 > <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">MDN documentation about HTTP status codes</a>.
+
+<h4>Сокращения, чтобы запомнить названия</h4>
+
+Давайте снова рассмотрим предыдущий пример:
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.post("/items/", status_code=201)
+async def create_item(name: str):
+    return {"name": name}
+```
+
+`201` это статус-код для "Created".
+
+Но вам не обязательно нужно помнить, что означает каждый из этих кодов.
+
+Вы можете использовать удобные переменные из `fastapi.status`.
+
+```python
+from fastapi import FastAPI, status
+
+app = FastAPI()
+
+@app.post("/items/", status_code=status.HTTP_201_CREATED)
+async def create_items(name: str):
+    return {"name": name}
+```
+
+Это просто удобно, они содержат то же самое число, но таким способом вы можете использовать автозавершение редактора
+чтобы их найти:
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/response-status-code/image02.png" width="420" height="115">
+
+> **Технические детали**
+> 
+> Вы можете еще использовать `from starlette import status`
+> 
+> FastAPI предоставляет тот же `starlette.status` как `fastapi.status` просто удобнее для вас, разработчика. Но это 
+> он идет напрямую из Starlette.
+
+<h4>Изменение значения по умолчанию</h4>
+
+Позже, в продвинутом руководстве, вы увидите как возвращать статус-код отличающийся от установленного вами по умолчанию.
