@@ -63,7 +63,7 @@ async def create_upload_file(file: UploadFile):
 Имейте в виду, что это означает, что все содержимое файла будет храниться в памяти. Это будет работать хорошо для
 небольших файлов.
 
-Но существуют несколько случаев в которых вы можете получить выгоду используя `UploadFile`.
+Но существуют несколько случаев в которых вы можете получить выгоду, используя `UploadFile`.
 
 <h4>Параметры файла с `UploadFile`</h4>
 
@@ -139,3 +139,173 @@ contents = myfile.file.read()
 
 <h3>Что такое "Данные формы"</h3>
 
+Способ HTML форм (<form></form>) отправляет данные на сервер обычно используя "специальную" кодировку для этих данных, она
+отличается от JSON.
+
+FastAPI будет позволять читать эти данные из правильного места, вместо JSON.
+
+> **Технические детали**
+> 
+> Данные из форм обычно закодированы с использованием "media type" `application/x-www-form-urlencoded` когда в них не 
+> включены файлы.
+> 
+> Но когда в форме есть файлы, она закодирована как `multipart/form-data`. Если вы используете `File`, FastAPI будет знать,
+> что ему нужно получить файлы из корректного части тела.
+> 
+> Если вы хотите прочитать больше об этих кодировках и полях формы, пройдите по 
+> <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST">MDN web docs for `POST`</a>.
+
+> **Предупреждение!!!**
+> 
+> Вы можете объявлять несколько параметров `File` и `Form` в операции пути, но вы не можете также объявлять поля `Body`,
+> что ожидает получить JSON, так у запроса будет тело, закодированное используя `multipart/form-data` вместо
+> `application/json`.
+> 
+> Это не ограничение FastAPI, это часть протокола HTTP.
+
+<h4>Необязательная загрузка файла</h4>
+
+Вы можете делать файл необязательным, используя стандартную аннотацию типа и установив значение по умолчанию `None`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, File, UploadFile
+
+app = FastAPI()
+
+@app.post("/files/")
+async def create_file(file: Annotated[bytes | None, File()] = None):
+    if not file:
+        return {"message": "no file"}
+    else:
+        return {"file_size": len(file)}
+
+@app.post("/uploadfile/")
+async def create_upload_file(file: UploadFile | None = None):
+    if not file:
+        return {"message": "No upload file"}
+    else:
+        return {"filename": file.filename}
+```
+
+<h4>`UploadFile` с дополнительными Metadata</h4>
+
+Еще вы можете использовать `File()` с `UploadFile`, например, чтобы установить дополнительные метаданные:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, File, UploadFile
+
+app = FastAPI()
+
+@app.post("/files/")
+async def create_file(file: Annotated[bytes, File(description="A file read as bytes")]):
+    return {"file_size": len(file)}
+
+@app.post("/uploadfile/")
+async def create_upload_file(
+        file: Annotated[UploadFile, File(description="A file read as UploadFile")],
+):
+    return {"filename": file.filename}
+```
+
+<h4>Несколько загрузок файла</h4>
+
+Есть возможность загрузить несколько файлов за раз.
+
+Они были бы связаны с одним и тем же "полем формы", отправленным с использованием "данных формы".
+
+Чтобы это использовать, объявите список `bytes` или `UploadFile`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import HTMLResponse
+
+app = FastAPI()
+
+@app.post("/files/")
+async def create_files(files: Annotated[list[bytes], File()]):
+    return {"file_sizes": [len(file) for file in files]}
+
+@app.post("/uploadfiles/")
+async def create_upload_files(files: list[UploadFile]):
+    return {"filenames": [file.filename for file in files]}
+
+@app.get("/")
+async def main():
+    content = """
+    <body>
+    <form action="/files/" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit">
+    </form>
+    <form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit">
+    </form>
+    </body>
+    """
+    return HTMLResponse(content=content)
+```
+
+Вы получите, как заявлено, `list` из `bytes` или `UploadFile`.
+
+> **Технические детали**
+> 
+> Вы можете также использовать `from starlette.responses import HTMLResponse`.
+> 
+> FastAPI предоставляет те же `starlette.responses` как `fastapi.responses`, просто удобнее для вас, разработчика. Но
+> большинство доступных ответов приходят напрямую из Starlette.
+
+<h4>Несколько загрузок файла с дополнительными Metadata</h4>
+
+И точно так же как и ранее, вы можете использовать `File()` чтобы устанавливать дополнительные параметры, даже для
+`UploadFile`:
+
+```python
+from typing import Annotated
+
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import HTMLResponse
+
+app = FastAPI()
+
+@app.post("/files/")
+async def create_files(
+        files: Annotated[list[bytes], File(description="Multiple files as bytes")],
+):
+    return {"file_sizes": [len(file) for file in files]}
+
+@app.post("/uploadfiles/")
+async def create_upload_files(
+        files: Annotated[
+          list[UploadFile], File(description="Multiple files as UploadFile")
+        ],
+):
+    return {"filenames": [file.filename for file in files]}
+
+@app.get("/")
+async def main():
+    content = """
+    <body>
+    <form action="/files/" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit">
+    </form>
+    <form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit">
+    </form>
+    </body>
+    """
+    return HTMLResponse(content=content)
+```
+
+<h4>Резюме</h4>
+
+Используйте `File`, `bytes` и `UploadFile` чтобы объявить файлы, которые будут загружены в запрос, отправленные как
+форма данных.
