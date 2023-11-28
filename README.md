@@ -24,4 +24,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/form_data.md">Form данные</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/request_files.md">Запрос файлов</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/request_forms_and_files.md">Запрос форм и файлов</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/handling_errors.md">Обработка ошибок</a><br>
 </p>
