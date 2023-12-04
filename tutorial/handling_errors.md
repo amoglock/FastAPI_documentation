@@ -291,3 +291,125 @@ async def read_item(item_id: int):
 > 
 > FastAPI предоставляет те же`starlette.responses` как `fastapi.responses` просто удобнее для вас, разработчика. Но 
 > большинство доступных ответов приходят напрямую из Starlette.
+
+<h4>Использование тела `RequestValidationError`</h4>
+
+`RequestValidationError` содержит `body`, полученное с неверными данными.
+
+Вы можете использовать его пока разрабатываете ваше приложение, чтобы записывать тело и отлаживать его, возвращать его
+пользователю и т.д.:
+
+```python
+from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
+app = FastAPI()
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
+    )
+
+class Item(BaseModel):
+    title: str
+    size: int
+
+@app.post("/items/")
+async def create_item(item: Item):
+    return item
+```
+
+Теперь попробуем отправить неправильный элемент, например:
+
+```JSON
+{
+  "title": "towel",
+  "size": "XL"
+}
+```
+
+Вы получите ответ, говорящий вам, что данные содержащиеся в полученном теле недопустимые:
+
+```JSON
+{
+  "detail": [
+    {
+      "loc": [
+        "body",
+        "size"
+      ],
+      "msg": "value is not a valid integer",
+      "type": "type_error.integer"
+    }
+  ],
+  "body": {
+    "title": "towel",
+    "size": "XL"
+  }
+}
+```
+
+<h5>`HTTPException` FastAPI против `HTTPException` Starlette</h5>
+
+FastAPI имеет свои `HTTPException`.
+
+Класс ошибки `HTTPException` FastAPI наследуется от класса ошибки `HTTPException` Starlette.
+
+Единственная разница в том, что `HTTPException` FastAPI позволяет вам добавлять заголовки которые будут включены в ответ.
+
+Это нужно/используется внутренне для OAuth 2.0 и некоторых утилит безопасности.
+
+Поэтому вы можете продолжать вызывать `HTTPException` FastAPI, как обычно, в вашем коде
+
+Но когда вы регистрируете обработчик ошибки, вам следует регистрировать его для `HTTPException` Starlette.
+
+Таким образом, если какая-либо часть внутреннего кода Starlette или расширение Starlette, или подключаемый модуль,
+вызывает Starlette `HTTPException`, ваш обработчик будет готов поймать и обработать его.
+
+В примере, чтобы иметь возможность иметь оба `HTTPException` в одном коде, исключения Starlette переименованы в
+`StarletteHTTPException`:
+
+```python
+from starlette.exceptions import HTTPExceptions as StarletteHTTPException
+```
+
+<h4>Переиспользование обработчиков исключения FastAPI</h4>
+
+Если вам нужно использовать исключение вместе с таким же обработчиком из FastAPI по умолчанию, вы можете импортировать
+и переиспользовать дефолтные обработчики из `fastapi.exception_handlers`:
+
+```python
+from fastapi import FastAPI, HTTPException
+from fastapi.exception_handlers import (
+    http_exception_handler,
+    request_validation_exception_handler,
+)
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+app = FastAPI()
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request, exc):
+    print(f"OMG! An HTTP error!: {repr(exc)}")
+    return await http_exception_handler(request, exc)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    print(f"OMG! The client sent invalid data!: {exc}")
+    return await request_validation_exception_handler(request, exc)
+
+@app.get("/items/{item_id}")
+async def read_item(item_id: int):
+    if item_id == 3:
+        raise HTTPException(status_code=418, detail="Nope! I don`t like 3.")
+    return {"item_id": item_id}
+```
+
+В этом примере вы просто печатаете ошибку с очень выразительным сообщением, но вы поняли идею. Вы можете использовать 
+исключение и затем просто переиспользовать обработчик по умолчанию.
