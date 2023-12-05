@@ -26,4 +26,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/request_forms_and_files.md">Запрос форм и файлов</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/handling_errors.md">Обработка ошибок</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/path_operation_configuration.md">Конфигурация операции пути</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/json_compatible_encoder.md">JSON-совместимый кодировщик</a><br>
 </p>
