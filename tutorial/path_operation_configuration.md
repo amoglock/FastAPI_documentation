@@ -130,3 +130,128 @@ class Item(BaseModel):
 async def create_item(item: Item):
     return item
 ```
+
+<h4>Описание из docstring</h4>
+
+Так как описания имеют тенденцию быть длинными и занимать несколько строк, вы можете объявить описание операции пути
+в docstring функции и FastAPI прочитает ее оттуда.
+
+Вы можете использовать <a href="https://en.wikipedia.org/wiki/Markdown">Markdown</a> в docstring, он будет корректно
+реализован и показан (принимая во внимание отступ docstring).
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+    tags: set[str] = set()
+
+@app.post("/items/", response_model=Item, summary="Create an item")
+async def create_item(item: Item):
+    """
+    Create an item with all the information:
+
+    - **name**: each item must have a name
+    - **description**: a long description
+    - **price**: required
+    - **tax**: if the item doesn't have tax, you can omit this
+    - **tags**: a set of unique tag strings for this item
+    """
+    return item
+```
+
+Он будет использован в интерактивной документации:
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/path-operation-configuration/image02.png">
+
+<h4>Описание ответа</h4>
+
+Вы можете указывать описание ответа с помощью параметра `response_description`:
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+    tags: set[str] = set()
+
+
+@app.post(
+    "/items/",
+    response_model=Item,
+    summary="Create an item",
+    response_description="The created item",
+)
+async def create_item(item: Item):
+    """
+    Create an item with all the information:
+
+    - **name**: each item must have a name
+    - **description**: a long description
+    - **price**: required
+    - **tax**: if the item doesn't have tax, you can omit this
+    - **tags**: a set of unique tag strings for this item
+    """
+    return item
+```
+
+> **Для информации**
+> 
+> Обратите внимание, что `response_description` относится конкретно к ответу, `description` в основном относится к 
+> операции пути.
+
+> **Для проверки**
+> 
+> OpenAPI предусматривает, что для каждой операции пути требуется описание ответа.
+> 
+> Поэтому, если вы его не предоставите, FastAPI автоматически сгенерирует один "Успешный ответ".
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/path-operation-configuration/image03.png">
+
+<h4>Отказ операции пути</h4>
+
+Если вам нужно пометить операцию пути как не рекомендованную к использованию, но без ее удаления, передайте параметр
+`deprecated`:
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/items/", tags=["items"])
+async def read_items():
+    return [{"name": "Foo", "price": 42}]
+
+@app.get("/users/", tags=["users"])
+async def read_users():
+    return [{"username": "johndoe"}]
+
+@app.get("/elements/", tags=["items"], deprecated=True)
+async def read_elements():
+    return [{"item_id": "Foo"}]
+```
+
+Она будет понятно помечена как не рекомендованная в документации:
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/path-operation-configuration/image04.png">
+
+Посмотрите как выглядят нежелательные и обычные операции пути:
+
+<img src="https://fastapi.tiangolo.com/img/tutorial/path-operation-configuration/image05.png">
+
+<h4>Резюме</h4>
+
+Вы можете легко настраивать и добавлять метаданные для вашей операции пути, передав параметры в декораторы операции пути.
