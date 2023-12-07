@@ -48,11 +48,11 @@ async def update_item(item_id: str, item: Item):
 
 Это означает, что если вы хотите обновить элемент `bar`, используя `PUT`, с телом содержащим:
 
-```JSON
+```python
 {
   "name": "Barz",
   "price": 3,
-  "description": None,
+  "description": None
 }
 ```
 
@@ -240,4 +240,4 @@ async def update_item(item_id: str, item: Item):
 > 
 > Чтобы разделить модели со всеми необязательными значениями для изменений от моделей с обязательными значениями для
 > создания, вы можете использовать идеи, описанные в
-> <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/extra_models.md">Дополнительные модели</a><br>.
+> <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/extra_models.md">Дополнительные модели</a>.
