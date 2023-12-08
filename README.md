@@ -28,4 +28,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/path_operation_configuration.md">Конфигурация операции пути</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/json_compatible_encoder.md">JSON-совместимый кодировщик</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/body_updates.md">Тело - обновления</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/dependencies.md">Зависимости</a><br>
 </p>
