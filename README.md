@@ -31,4 +31,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/dependencies.md">Зависимости</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/classes_as_dependencies.md">Классы как зависимости</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/sub_dependencies.md">Подзависимости</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/dependencies_in_path_operation_decorators.md">Зависимости в декораторах операции пути</a><br>
 </p>
