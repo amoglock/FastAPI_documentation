@@ -33,4 +33,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/sub_dependencies.md">Подзависимости</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/dependencies_in_path_operation_decorators.md">Зависимости в декораторах операции пути</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/global_dependencies.md">Глобальные зависимости</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/dependencies_with_yield.md">Зависимости с yield</a><br>
 </p>
