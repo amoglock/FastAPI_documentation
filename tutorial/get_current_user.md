@@ -163,3 +163,4 @@ async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]
 > 
 > Мы не ограничены иметь только одну зависимость которая может возвращать этот тип данных.
 
+...
