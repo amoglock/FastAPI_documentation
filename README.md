@@ -36,4 +36,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/dependencies_with_yield.md">Зависимости с yield</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/security.md">Безопасность</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/security_first_steps.md">Безопасность - первые шаги</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/get_current_user.md">Получение текущего пользователя</a><br>
 </p>
