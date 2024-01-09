@@ -39,4 +39,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/get_current_user.md">Получение текущего пользователя</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/simple_oauth2_pass_bearer.md">Простой OAuth2 с паролем и Bearer</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/oauth2_with_pass.md">OAuth2 с паролем (и хешированием), Bearer с JWT токенами</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/middleware.md">Middleware</a><br>
 </p>
