@@ -42,4 +42,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/middleware.md">Middleware</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/cors.md">CORS (Cross-Origin Resource Sharing)</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/sql_databases.md">SQL(Реляционные) базы данных</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/bigger_applications.md">Большие приложения - несколько файлов</a><br>
 </p>
