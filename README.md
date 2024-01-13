@@ -41,4 +41,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/oauth2_with_pass.md">OAuth2 с паролем (и хешированием), Bearer с JWT токенами</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/middleware.md">Middleware</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/cors.md">CORS (Cross-Origin Resource Sharing)</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/sql_databases.md">SQL(Реляционные) базы данных</a><br>
 </p>
