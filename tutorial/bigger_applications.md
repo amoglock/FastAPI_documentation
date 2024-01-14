@@ -356,3 +356,194 @@ from ...dependencies import get_token_header
 Но мы все равно можем добавлять еще `tags`, которые применим к определенным ***операциям пути*** и также какие-то
 дополнительные `responses`, определенные для этой ***операции пути***:
 
+```python
+app/routers/items.py
+____________________________
+
+from fastapi import APIRouter, Depends
+
+from ..dependencies import get_token_header
+
+
+router = APIRouter(
+    prefix="/items",
+    tags=["items"],
+    dependencies=[Depends(get_token_header)],
+    responses={404: {"description": "Not found"}},
+)
+
+...
+
+@router.put(
+  "/item_id",
+  tags=["custom"],
+  responces={403: {"description": "Operation forbidden"}},
+)
+async def update_item(item_id: str):
+    ...
+```
+
+> **Совет**
+> 
+> Эта операция пути будет иметь комбинацию тегов: `["items", "custom"]`.
+> 
+> И она также будет иметь оба ответа в документации, один для `404`, и один для `403`.
+
+## Основной `FastAPI`
+
+Теперь, давайте рассмотрим модуль `app/main.py`.
+
+Здесь вы импортируете и используете класс `FastAPI`.
+
+Это будет главным файлом вашего приложения, который связывает все вместе.
+
+И поскольку основная часть вашей логики теперь будет жить в своих собственных модулях, главный файл будет довольно простым.
+
+### Импорт FastAPI
+
+Вы импортируете и создаете класс `FastAPI` как обычно.
+
+И мы даже можем объявить 
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/global_dependencies.md">глобальные зависимости</a>,
+которые будут совмещены для каждого `APIRouter`:
+
+```python
+app/main.py
+________________
+
+from fastapi import FastAPI, Depends
+
+from .dependencies import get_query_token, get_token_header
+
+
+app = FastAPI(dependencies=[Depends(get_query_token)])
+
+...
+```
+
+### Импорт `APIROuter`
+
+Теперь мы импортируем другие подмодули, которые имеют `APIRouter`:
+
+```python
+app/main.py
+________________
+
+from fastapi import FastAPI, Depends
+
+from .dependencies import get_query_token, get_token_header
+from .internal import admin
+from .routers import items, users
+
+app = FastAPI(dependencies=[Depends(get_query_token)])
+
+...
+```
+
+Так как файлы `app/routers/user.py` и `app/routers/items.py` это подмодули, которые являются частью того же пакета `app`,
+мы можем использовать одну точку `.` чтобы импортировать их, используя "относительный импорт".
+
+### Как работает импортирование
+
+Секция:
+```python
+from .routers import items, users
+```
+
+Означает:
+
+* Запускается в том же пакете, где живет этот модуль (файл `app/main.py`, директория `app/`)...
+* Ищет подпакет `routers` (директория `app/routers/`)...
+* И из него импортирует подмодуль `items` (файл `app/routers/items.py`) и `users` (файл `app/routers/users.py`)...
+
+Модуль `items` будет иметь переменную `router` (`items.router`). Это та, которую мы создали в файле `app/routers/items.py`,
+это объект `APIRouter`.
+
+И затем мы делаем то же самое для модуля `users`.
+
+Мы можем импортировать их и так:
+
+```python
+from app.routers import items, users
+```
+
+> **Для информации**
+> 
+> Первая версия это "относительный импорт":
+> ```python
+> from .routers import items, users
+> ```
+> Вторая версия это "абсолютный импорт":
+> ```python
+> from app.routers import items, users
+> ```
+> 
+> Чтобы узнать больше про пакеты Python и модули, почитайте 
+> <a href="https://docs.python.org/3/tutorial/modules.html">официальную документацию Python о модулях</a>.
+
+### Избегайте коллизий имен
+
+Мы импортируем подмодуль `items` напрямую, вместо импорта просто его переменной `router`.
+
+Это потому, что у нас есть еще одна переменная с именем `router` в подмодуле `users`.
+
+Если бы импортировали их один за другим:
+
+```python
+from .routers.items import router
+from .routers.users import router
+```
+
+То `router` из `users` перезаписал бы `router` из `items` и мы не смогли бы использовать их одновременно.
+
+Поэтому, чтобы использовать их обоих в одном файле, мы импортируем подмодули напрямую:
+
+```python
+from .routers import items, users
+```
+
+### Подключение `APIRouter` для `users` и `items`
+
+Теперь давайте включим `router` из подмодулей `users` и `items`:
+
+```python
+app/main.py
+________________
+
+from fastapi import FastAPI, Depends
+
+from .dependencies import get_query_token, get_token_header
+from .internal import admin
+from .routers import items, users
+
+app = FastAPI(dependencies=[Depends(get_query_token)])
+
+app.include_router(users.router)
+app.include_router(items.router)
+...
+```
+
+> **Для информации**
+> 
+> `users.router` содержит `APIRouter` внутри файла `app/routers/users.py`.
+> 
+> И `items.router` содержит `APIRouter` внутри файла `app/routers/items.py`.
+
+С помощью `app.include_router()` мы можем добавлять каждый `APIRouter` к главному приложению `FastAPI`.
+
+Он включит все `router` как часть приложения.
+
+> **Технические детали**
+> 
+> Фактически это внутренне создает ***операцию пути*** для каждой ***операции пути**, которая объявлена в `APIRouter`.
+> 
+> Поэтому, под капотом, все будет работать так, как если бы все это было одним приложением.
+
+> **Для галочки**
+> 
+> Вам не нужно беспокоиться о производительности, когда подключаете роутеры.
+> 
+> Они потребуют микросекунды и это произойдет только при старте.
+> 
+> Поэтому это не влияет на производительность. ⚡
+
