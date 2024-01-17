@@ -44,4 +44,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/sql_databases.md">SQL(Реляционные) базы данных</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/bigger_applications.md">Большие приложения - несколько файлов</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/background_tasks.md">Фоновые задачи</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/metadata_and_docs.md">Метаданные и URLs документации</a><br>
 </p>
