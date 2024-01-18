@@ -46,4 +46,5 @@
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/background_tasks.md">Фоновые задачи</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/metadata_and_docs.md">Метаданные и URLs документации</a><br>
 <a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/static_files.md">Статические файлы</a><br>
+<a href="https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/testing.md">Тестирование</a><br>
 </p>
