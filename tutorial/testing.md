@@ -195,3 +195,123 @@ async def create_item(item: Item, x_token: Annotated[str, Header()]):
     return item
 ```
 
+### Расширенный тестовый файл
+
+Затем вы можете обновить `test_main.py` с расширенными тестами:
+
+```text
+from fastapi.testclient import TestClient
+
+from .main import app
+
+client = TestClient(app)
+
+
+def test_read_item():
+    response = client.get("/items/foo", headers={"X-Token": "coneofsilence"})
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": "foo",
+        "title": "Foo",
+        "description": "There goes my hero",
+    }
+
+
+def test_read_item_bad_token():
+    response = client.get("/items/foo", headers={"X-Token": "hailhydra"})
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid X-Token header"}
+
+
+def test_read_inexistent_item():
+    response = client.get("/items/baz", headers={"X-Token": "coneofsilence"})
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Item not found"}
+
+
+def test_create_item():
+    response = client.post(
+        "/items/",
+        headers={"X-Token": "coneofsilence"},
+        json={"id": "foobar", "title": "Foo Bar", "description": "The Foo Barters"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": "foobar",
+        "title": "Foo Bar",
+        "description": "The Foo Barters",
+    }
+
+
+def test_create_item_bad_token():
+    response = client.post(
+        "/items/",
+        headers={"X-Token": "hailhydra"},
+        json={"id": "bazz", "title": "Bazz", "description": "Drop the bazz"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid X-Token header"}
+
+
+def test_create_existing_item():
+    response = client.post(
+        "/items/",
+        headers={"X-Token": "coneofsilence"},
+        json={
+            "id": "foo",
+            "title": "The Foo ID Stealers",
+            "description": "There goes my stealer",
+        },
+    )
+    assert response.status_code == 409
+    assert response.json() == {"detail": "Item already exists"}
+```
+
+Каждый раз когда вам нужен клиент, чтобы передать информацию в запрос и вы не знаете как это сделать, вы можете поискать
+(Google) как это сделать в `httpx`, или даже как сделать это с `requests`, так как HTTPX основан на Requests.
+
+Затем вы просто делаете то же самое в своих тестах.
+
+Например:
+* Чтобы передать параметр ***пути*** или ***запроса***, добавьте его в URL.
+* Чтобы передать тело JSON, передайте объект Python (`dict` например) в параметр `json`.
+* Если вам нужно передать ***данные формы*** вместо JSON, используйте параметр `data`.
+* Чтобы передать ***заголовки***, используйте `dict` в параметре `headers`.
+* Для ***куки***, `dict` в параметре `cookies`. 
+
+Чтобы получить больше информации о том как передать данные в бекэнд (используя `httpx` или `TestClient`), посмотрите
+[документацию HTTPX](https://www.python-httpx.org/).
+
+> **Для информации**
+> 
+> Обратите внимание, что `TestClient` принимает данные, которые могут быть конвертированы в JSON, а не модель Pydantic.
+> 
+> Если у вас в тестах модель Pydantic и вы хотите отправить в приложение ее данные в процессе тестирования, вы можете 
+> использовать `jsonable_encoder`, описанный в 
+> [JSON-совместимом кодировщике](https://github.com/amoglock/FastAPI_documentation/blob/master/tutorial/json_compatible_encoder.md).
+
+## Запустим это
+
+После всего, что мы сделали, вам просто нужно установить `pytest`: 
+
+```commandline
+pip install pytest
+```
+
+Он автоматически обнаружит файлы и тесты, выполнит их, и выдаст вам результаты.
+
+Запуск тестов:
+
+```text
+$ pytest
+================ test session starts ================
+platform linux -- Python 3.6.9, pytest-5.3.5, py-1.8.1, pluggy-0.13.1
+rootdir: /home/user/code/superawesome-cli/app
+plugins: forked-1.1.3, xdist-1.31.0, cov-2.8.1
+collected 6 items
+
+████████████████████████████████████████ 100%
+test_main.py ......                            [100%]
+
+================= 1 passed in 0.03s =================
+```
